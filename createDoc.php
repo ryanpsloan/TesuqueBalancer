@@ -40,107 +40,119 @@ if(isset($_SESSION['fileData'])) {
     foreach ($fileData as $k => $data) {
         $key = (int)$data[4];
         $data[11] = $k;
-        $groups[$data[3]][$key][] = $data;
+        $groups[$data[3]][$key][$data[6]][] = $data;
     }
     //var_dump($groups);
 
     $lines = array();
-    foreach ($groups as $groupKey => $group) {
+    foreach($groups as $ee => $arrData) {
+        if (array_key_exists($ee, $toBalance)) {
 
-        if (array_key_exists($groupKey, $toBalance)) {
+            foreach ($arrData as $groupKey => $group) {
 
-            foreach ($group as $numKey => $number) {
+                if (array_key_exists($groupKey, $toBalance[$ee])) {
 
-                if (array_key_exists($numKey, $toBalance[$groupKey])) {
-                    foreach($number as $array) {
-                        $lines[$groupKey][$numKey] = array($array[0],$array[1],$array[2],$array[3],$array[4],1020,$array[6],$array[7],$array[8],0.00,'0.00', $array[11]);
-                        //var_dump($array);
+                    foreach ($group as $numKey => $number) {
+
+                        if (array_key_exists($numKey, $toBalance[$ee][$groupKey])) {
+                            foreach($number as $array) {
+                                $lines[$ee][$groupKey][$numKey] = array($array[0], $array[1], $array[2], $array[3], $array[4], '1020', $array[6], $array[7], $array[8], '0.00', '0.00', $array[11]);
+                                //var_dump($array);
+                            }
+                        }
                     }
-
                 }
             }
         }
     }
     //var_dump($lines);
     $output = array();
+    foreach($lines as $ee => &$arr) {
+        foreach ($arr as $lineKey => &$line) {
 
-    foreach ($lines as $lineKey => &$line) {
+            foreach ($line as $numKey => &$number) {
+                $output[$ee][$lineKey][$numKey][] = "<b><u>" . $ee . "</u></b>";
+                $output[$ee][$lineKey][$numKey][] =  "Fund: ".$lineKey . " - Grant: " . $numKey ;
+                $output[$ee][$lineKey][$numKey][] = "Added Additional Line";
+                $dt = $toBalance[$ee][$lineKey][$numKey][0];
+                $ct = $toBalance[$ee][$lineKey][$numKey][1];
+                $difference = 0.00;
 
-        foreach ($line as $numKey => &$number) {
-
-            $output[$lineKey][$numKey][] = "<b><u>". $lineKey. " - " . $numKey."</u></b>";
-            $output[$lineKey][$numKey][] = "Added Additional Line";
-            $dt = $toBalance[$lineKey][$numKey][0];
-            $ct = $toBalance[$lineKey][$numKey][1];
-            $difference = 0.00;
-
-            if ($dt > $ct) {
-
-                $output[$lineKey][$numKey][] = "Previous Credit Value: $" . $number[10];
-                $difference = round($dt - $ct, 2);
-                $output[$lineKey][$numKey][] = " $".number_format($dt,2)." | $". number_format($ct,2);
-                $output[$lineKey][$numKey][] = "Difference: $" . number_format($difference,2);
-                $number[10] = (string)(((float)$number[10] + $difference));
-                $output[$lineKey][$numKey][] = "Current Value: <span class='currentVal'>$" . (string) $number[10]. "</span>";
+                if ($dt > $ct) {
 
 
-            } else if($ct > $dt){
+                    $difference = round($dt - $ct, 2);
+                    $output[$ee][$lineKey][$numKey][] = " $" . number_format($dt, 2) . " | $" . number_format($ct, 2);
+                    $output[$ee][$lineKey][$numKey][] = "Difference: $" . number_format($difference, 2);
+                    $number[10] = (string)(((float)$number[10] + $difference));
+                    $output[$ee][$lineKey][$numKey][] = "Line Value: <span class='currentVal'>$" . (string)$number[10] . "</span>";
 
-                $output[$lineKey][$numKey][] = "Previous Debit Value: $" . $number[10];
-                $difference = round($ct - $dt, 2);
-                $output[$lineKey][$numKey][] = " $".number_format($dt,2)." | $". number_format($ct,2);
-                $output[$lineKey][$numKey][] = "Difference: -$" . number_format($difference,2);
-                $number[10] = (string)(((float)$number[10] - $difference));
-                $output[$lineKey][$numKey][] = "Current Value: <span class='currentVal'>$" . (string) $number[10]. "</span>";
+
+                } else if ($ct > $dt) {
+
+
+                    $difference = round($ct - $dt, 2);
+                    $output[$ee][$lineKey][$numKey][] = " $" . number_format($dt, 2) . " | $" . number_format($ct, 2);
+                    $output[$ee][$lineKey][$numKey][] = "Difference: -$" . number_format($difference, 2);
+                    $number[10] = (string)(((float)$number[10] - $difference));
+                    $output[$ee][$lineKey][$numKey][] = "Line Value: <span class='currentVal'>$" . (string)$number[10] . "</span>";
+
+                }
+                $output[$ee][$lineKey][$numKey][] = "<hr>";
+
+                //var_dump($difference);
+                //var_dump($number);
 
             }
-            $output[$lineKey][$numKey][] = "<hr>";
-
-            //var_dump($difference);
-            //var_dump($number);
+            unset($number);
 
         }
-        unset($number);
-
+        unset($line);
     }
-    unset($line);
+    unset($arr);
     //var_dump($lines);
     //var_dump($groups);
 
+    foreach ($groups as $ee => &$arr) {
 
-    foreach ($groups as $groupKey => &$group) {
-        if (array_key_exists($groupKey, $lines)) {
-            foreach ($group as $numKey => &$number) {
-                //var_dump($groupKey. " " .$numKey);
-                if (array_key_exists($numKey, $lines[$groupKey])) {
+        if (array_key_exists($ee, $lines)) {
+            foreach ($arr as $groupKey => &$group) {
 
-                    foreach ($number as $key => &$array) {
-                        if ($array[11] === $lines[$groupKey][$numKey][11]) {
-                            //var_dump($array, $lines[$groupKey][$numKey]);
-                            array_push($groups[$groupKey][$numKey],$lines[$groupKey][$numKey]);
+                if (array_key_exists($groupKey, $lines[$ee])) {
+                    foreach ($group as $numKey => &$number) {
+
+                        if (array_key_exists($numKey, $lines[$ee][$groupKey])) {
+                            foreach ($number as &$array){
+                                if ($array[11] === $lines[$ee][$groupKey][$numKey][11]) {
+
+                                    array_push($groups[$ee][$groupKey][$numKey], $lines[$ee][$groupKey][$numKey]);
+                                }
+                            }
+                            unset($array);
                         }
-
                     }
-                    unset($array);
+                    unset($number);
                 }
             }
-            unset($number);
         }
+        unset($group);
     }
-    unset($group);
+    unset($arr);
     //var_dump("_____________________________________________________________________________________________",$groups);
     $newData = array();
     //var_dump($groups);
     foreach($groups as $ee){
         foreach($ee as $number){
+            foreach ($number as $file) {
+                    foreach($file as $f) {
+                        unset($f[11]);
+                        $newData[] = $f;
+                    }
 
-            foreach($number as $file){
-                unset($file[11]);
-                $newData[] = $file;
             }
         }
-
     }
+
     //var_dump($newData);
     //var_dump("OUTPUT___________________________________________________________________________________________",$output);
 
@@ -162,7 +174,7 @@ if(isset($_SESSION['fileData'])) {
     //create a .csv from updated original fileData
     for($i = 0; $i < count($newData); $i++){
         fputcsv($handle, $newData[$i]);
-        fwrite($handle, "\r\n");
+        //fwrite($handle, "\r\n");
     }
 
     fclose($handle);
@@ -273,10 +285,13 @@ if(isset($_SESSION['fileData'])) {
                 //display the contents of output
                 if(isset($output)){ //if session var is set
                     echo "<table>";
+
                    foreach($output as $ee){
                         foreach($ee as $array) {
                             foreach ($array as $line) {
-                                echo "<tr><td>" . $line . "</td></tr>";
+                                foreach ($line as $l) {
+                                    echo "<tr><td>" . $l . "</td></tr>";
+                                }
                             }
                         }
                     }

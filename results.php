@@ -147,14 +147,18 @@ else{
                 if(isset($output)) {
                     echo "<span class='heading border'>File Date: $date</span><br><br>";
 
-                    foreach ($output as $key => $data) {
-                        echo "<span class='heading'>$key</span><br>";
-                        foreach ($data as $array) {
-                            foreach ($array as $line) {
-                                echo "<p>$line</p>";
+                    foreach ($output as $ee => $arr) {
+                        echo "<span class='heading'>$ee</span><br>";
+                        foreach ($arr as $key => $data) {
+
+                            foreach ($data as $z => $array) {
+                                echo "<span class='heading'>Fund $key - Grant $z</span><br>";
+                                foreach ($array as $line) {
+                                    echo "<p>$line</p>";
+                                }
                             }
+                            echo "<br><hr>";
                         }
-                        echo "<br><hr>";
                     }
                 }
                 $d = number_format($totalSum['debitTotalSum'], 2);

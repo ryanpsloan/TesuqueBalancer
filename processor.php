@@ -139,10 +139,11 @@ if(isset($_FILES)) { //Check to see if a file is uploaded
         $nameArr = $numberArr = array();
 
         foreach($fileData as $key => $value ){
-            $nameArr[] = $value[3];
-            $numberArr[] = $value[4];
+            $employeeArr[] = $value[3];
+            $fundArr[] = $value[4];
+            $grantArr[] = $value[6];
         }
-        array_multisort($nameArr, SORT_ASC, $numberArr, SORT_ASC, $fileData);
+        array_multisort($employeeArr, SORT_ASC, $fundArr, SORT_ASC, $grantArr, SORT_ASC, $fileData);
 
         //var_dump($fileData);
         //used for viewing data
@@ -184,8 +185,8 @@ if(isset($_FILES)) { //Check to see if a file is uploaded
             }
 
             //set up a new array structure and cast values
-            $line = array('number' => (int) $row[4], 'debit' => (float) $row[9], 'credit' => (float) $row[10]);
-            $groups[$name][] = $line; //insert into new array
+            $line = array('number' => (int) $row[4], 'code' => (int) $row[6] ,'debit' => (float) $row[9], 'credit' => (float) $row[10]);
+            $groups[$name][$row[6]][] = $line; //insert into new array
         }
 
         //var_dump($groups);
@@ -220,190 +221,193 @@ if(isset($_FILES)) { //Check to see if a file is uploaded
         }*/
         //----------------------------------------------
         //Iterate through array and separate the data into 100, 200, 300 sections
-        foreach($groups as $key => $group) {
-            //view group data
-            //-------------------------------------------------------
-            /*echo "<hr><br>Group: $key<br>";
-            echo "Group Count: " .count($group) ."<br>";
-            $h = 0;
-            foreach($group as $row){
+        foreach($groups as $a => $g) {
+            foreach($g as $key =>$group) {
+                //view group data
+                //-------------------------------------------------------
+                /*echo "<br><hr><hr><br>";
+                echo "$key => <br>";
+                echo "<hr><br>Group: $a<br>";
+                echo "Group Count: " . count($group) . "<br>";
+                $h = 0;
+                foreach ($group as $row) {
                     echo "$h. ";
                     var_dump($row);
                     echo "<br>";
                     $h++;
-            }
-            echo "<br><hr><hr><br>";
-            echo "$key => <br>";*/
-            //----------------------------------------------------------
+                }*/
 
-            $count = count($group);
-            $number = $group[0]['number'];
-            //echo "Starting Number: $number<br><br>";
+                //----------------------------------------------------------
 
-            //payment code is either 100, 200, or 300, set boolean variable by checking the value of $number
-            if ($number === 10) {
-                $oneHundred = true;
-                $twoHundred = false;
-                $twoFiveHundred = false;
-                $threeHundred = false;
-            } else if ($number === 20) {
-                $twoHundred = true;
-                $twoFiveHundred = false;
-                $oneHundred = false;
-                $threeHundred = false;
-            } else if($number === 25){
-                $twoHundred = false;
-                $twoFiveHundred = true;
-                $oneHundred = false;
-                $threeHundred = false;
-            }
-            else if ($number === 50) {
-                $threeHundred = true;
-                $twoHundred = false;
-                $oneHundred = false;
-                $twoFiveHundred = false;
-            }
-            //read through and count the number of lines in various sections of paycodes by employee
-            for ($i = 0; $i < $count; $i++) {
-                if ($group[$i]['number'] !== $number) {//if payment code !== $number update $number with new code
-                    $number = $group[$i]['number'];
-                    if ($number === 10) { //set 100 section allowing 100s to be counted
-                        $oneHundred = true;
-                        $twoHundred = false;
-                        $twoFiveHundred = false;
-                        $threeHundred = false;
+                $count = count($group);
+                $number = $group[0]['number'];
+                //echo "Starting Number: $number<br><br>";
 
-                    } else if ($number === 20) { //set 200 section on allowing 200s to be counted
-                        $twoHundred = true;
-                        $twoFiveHundred = false;
-                        $oneHundred = false;
-                        $threeHundred = false;
+                //payment code is either 100, 200, or 300, set boolean variable by checking the value of $number
+                if ($number === 10) {
+                    $oneHundred = true;
+                    $twoHundred = false;
+                    $twoFiveHundred = false;
+                    $threeHundred = false;
+                } else if ($number === 20) {
+                    $twoHundred = true;
+                    $twoFiveHundred = false;
+                    $oneHundred = false;
+                    $threeHundred = false;
+                } else if ($number === 25) {
+                    $twoHundred = false;
+                    $twoFiveHundred = true;
+                    $oneHundred = false;
+                    $threeHundred = false;
+                } else if ($number === 50) {
+                    $threeHundred = true;
+                    $twoHundred = false;
+                    $oneHundred = false;
+                    $twoFiveHundred = false;
+                }
+                //read through and count the number of lines in various sections of paycodes by employee
+                for ($i = 0; $i < $count; $i++) {
+                    if ($group[$i]['number'] !== $number) {//if payment code !== $number update $number with new code
+                        $number = $group[$i]['number'];
+                        if ($number === 10) { //set 100 section allowing 100s to be counted
+                            $oneHundred = true;
+                            $twoHundred = false;
+                            $twoFiveHundred = false;
+                            $threeHundred = false;
 
-                    } else if($number === 25){
-                        $twoHundred = false;
-                        $twoFiveHundred = true;
-                        $oneHundred = false;
-                        $threeHundred = false;
+                        } else if ($number === 20) { //set 200 section on allowing 200s to be counted
+                            $twoHundred = true;
+                            $twoFiveHundred = false;
+                            $oneHundred = false;
+                            $threeHundred = false;
+
+                        } else if ($number === 25) {
+                            $twoHundred = false;
+                            $twoFiveHundred = true;
+                            $oneHundred = false;
+                            $threeHundred = false;
 
 
-                    } else if ($number === 50) { //sets 300 section on allowing 300s to be counted
-                        $threeHundred = true;
-                        $twoHundred = false;
-                        $oneHundred = false;
-                        $twoFiveHundred = false;
+                        } else if ($number === 50) { //sets 300 section on allowing 300s to be counted
+                            $threeHundred = true;
+                            $twoHundred = false;
+                            $oneHundred = false;
+                            $twoFiveHundred = false;
 
+                        }
+                    }
+                    if ($oneHundred) { //count number of lines in 10 section
+                        $oneCount++;
+                    } else if ($twoHundred) { //count number of lines in 20 section
+                        $twoCount++;
+                    } else if ($threeHundred) { //count number of lines in 30 section
+                        $threeCount++;
+                    } else if ($twoFiveHundred) { //count number of lines in 25 section
+                        $twoFiveCount++;
                     }
                 }
-                if ($oneHundred) { //count number of lines in 10 section
-                    $oneCount++;
-                } else if ($twoHundred) { //count number of lines in 20 section
-                    $twoCount++;
-                } else if ($threeHundred) { //count number of lines in 30 section
-                    $threeCount++;
-                } else if($twoFiveHundred){ //count number of lines in 25 section
-                    $twoFiveCount++;
+                //var_dump($group, $oneCount, $twoCount, $twoFiveCount, $threeCount);
+                if ($oneCount > 0) { //if any lines are counted in 100 section cut the array from the beginning up to the number of counted rows
+                    $groupA = array_slice($group, 0, $oneCount, true); //cut the array and set it into a new array
+                    //Below is used for viewing the data
+                    //----------------------------------------------------
+                    /*echo "<hr>******************************<br>";
+                    var_dump($group);
+                    echo "<br>**************************<br><hr>";
+                    $i = 0;
+                        echo "$key = > <br>";
+                        echo "One:$oneCount<br>";
+                        echo "<br>GroupA => <br>";
+                    foreach($groupA as $a) {
+                        echo "$i. ";
+                        var_dump($a);
+                        echo "<br>";
+                        $i++;
+                    }
+                        echo "number = $number";
+                        echo "<hr><br>";*/
+
+                    //----------------------------------------------------
+                    $sortedData[$a][$key][10] = $groupA; //set new array into another array with key values for name and code
+
                 }
-            }
-            //var_dump($group, $oneCount, $twoCount, $twoFiveCount, $threeCount);
-            if ($oneCount > 0) { //if any lines are counted in 100 section cut the array from the beginning up to the number of counted rows
-                $groupA = array_slice($group, 0, $oneCount, true); //cut the array and set it into a new array
-                //Below is used for viewing the data
-                //----------------------------------------------------
-                /*echo "<hr>******************************<br>";
-                var_dump($group);
-                echo "<br>**************************<br><hr>";
-                $i = 0;
-                    echo "$key = > <br>";
-                    echo "One:$oneCount<br>";
-                    echo "<br>GroupA => <br>";
-                foreach($groupA as $a) {
-                    echo "$i. ";
-                    var_dump($a);
-                    echo "<br>";
-                    $i++;
+                if ($twoCount > 0) { //If any lines counted in 200 section cut the array from end of 100s to end of 200s
+                    $groupB = array_slice($group, $oneCount, $twoCount, true); //slice the array at designated points
+                    //Below is used for viewing the data
+                    //--------------------------------------------------
+                    /*echo "<hr>******************************<br>";
+                    var_dump($group);
+                    echo "<br>**************************<br><hr>";
+                    $i = 0;
+                        echo "$key = > <br>";
+                        echo "Two:$twoCount<br>";
+                        echo "<br>GroupB => <br>";
+                    foreach($groupB as $b) {
+                        echo "$i. ";
+                        var_dump($b);
+                        echo "<br>";
+                        $i++;
+                    }
+                        echo "number = $number";
+                        echo "<hr><br>";*/
+                    //----------------------------------------------------
+                    $sortedData[$a][$key][20] = $groupB; //set cut array into another array with key values for name and code
+
                 }
-                    echo "number = $number";
-                    echo "<hr><br>";*/
+                if ($twoFiveCount > 0) { //If any lines counted in 200 section cut the array from end of 100s to end of 200s
+                    $position = $oneCount + $twoCount;
+                    $groupC = array_slice($group, $position, $twoFiveCount, true); //slice the array at designated points
+                    //Below is used for viewing the data
+                    //--------------------------------------------------
+                    /*echo "<hr>******************************<br>";
+                    var_dump($group);
+                    echo "<br>**************************<br><hr>";
+                    $i = 0;
+                        echo "$key = > <br>";
+                        echo "Two:$twoCount<br>";
+                        echo "<br>GroupB => <br>";
+                    foreach($groupB as $b) {
+                        echo "$i. ";
+                        var_dump($b);
+                        echo "<br>";
+                        $i++;
+                    }
+                        echo "number = $number";
+                        echo "<hr><br>";*/
+                    //----------------------------------------------------
+                    $sortedData[$a][$key][25] = $groupC; //set cut array into another array with key values for name and code
 
-                //----------------------------------------------------
-                $sortedData[$key][10] = $groupA; //set new array into another array with key values for name and code
-
-            }
-            if ($twoCount > 0) { //If any lines counted in 200 section cut the array from end of 100s to end of 200s
-                $groupB = array_slice($group, $oneCount, $twoCount, true); //slice the array at designated points
-                //Below is used for viewing the data
-                //--------------------------------------------------
-                /*echo "<hr>******************************<br>";
-                var_dump($group);
-                echo "<br>**************************<br><hr>";
-                $i = 0;
-                    echo "$key = > <br>";
-                    echo "Two:$twoCount<br>";
-                    echo "<br>GroupB => <br>";
-                foreach($groupB as $b) {
-                    echo "$i. ";
-                    var_dump($b);
-                    echo "<br>";
-                    $i++;
                 }
-                    echo "number = $number";
-                    echo "<hr><br>";*/
-                //----------------------------------------------------
-                $sortedData[$key][20] = $groupB; //set cut array into another array with key values for name and code
+                if ($threeCount > 0) { //if any lines counted in 300 section cut the array from end of 200s to end of array
+                    $position = $oneCount + $twoCount + $twoFiveCount;
+                    $groupD = array_slice($group, $position, $count, true); //slice the array at designated points
+                    //Below is used for viewing the data
+                    //---------------------------------------------------
+                    /*echo "<hr>******************************<br>";
+                    var_dump($group);
+                    echo "<br>**************************<br><hr>";
+                    $i = 0;
+                        echo "$key = > <br>";
+                        echo "Three:$threeCount<br>";
+                        echo "<br>GroupC => <br>";
+                    foreach($groupC as $c) {
+                        echo "$i. ";
+                        var_dump($c);
+                        echo "<br>";
+                        $i++;
+                    }
+                        echo "number = $number";
+                        echo "<hr><br>";*/
 
-            }
-            if ($twoFiveCount > 0) { //If any lines counted in 200 section cut the array from end of 100s to end of 200s
-                $position = $oneCount + $twoCount;
-                $groupC = array_slice($group, $position, $twoFiveCount, true); //slice the array at designated points
-                //Below is used for viewing the data
-                //--------------------------------------------------
-                /*echo "<hr>******************************<br>";
-                var_dump($group);
-                echo "<br>**************************<br><hr>";
-                $i = 0;
-                    echo "$key = > <br>";
-                    echo "Two:$twoCount<br>";
-                    echo "<br>GroupB => <br>";
-                foreach($groupB as $b) {
-                    echo "$i. ";
-                    var_dump($b);
-                    echo "<br>";
-                    $i++;
+                    //--------------------------------------------------
+                    $sortedData[$a][$key][50] = $groupD; //set the cut array values into new array with key for name and code
+
+
                 }
-                    echo "number = $number";
-                    echo "<hr><br>";*/
-                //----------------------------------------------------
-                $sortedData[$key][25] = $groupC; //set cut array into another array with key values for name and code
-
+                $oneCount = $twoCount = $threeCount = $twoFiveCount = 0; //set counters to 0 to reset for next iteration
             }
-            if ($threeCount > 0) { //if any lines counted in 300 section cut the array from end of 200s to end of array
-                $position = $oneCount + $twoCount + $twoFiveCount;
-                $groupD = array_slice($group, $position, $count, true); //slice the array at designated points
-                //Below is used for viewing the data
-                //---------------------------------------------------
-                /*echo "<hr>******************************<br>";
-                var_dump($group);
-                echo "<br>**************************<br><hr>";
-                $i = 0;
-                    echo "$key = > <br>";
-                    echo "Three:$threeCount<br>";
-                    echo "<br>GroupC => <br>";
-                foreach($groupC as $c) {
-                    echo "$i. ";
-                    var_dump($c);
-                    echo "<br>";
-                    $i++;
-                }
-                    echo "number = $number";
-                    echo "<hr><br>";*/
-
-                //--------------------------------------------------
-                $sortedData[$key][50] = $groupD; //set the cut array values into new array with key for name and code
-
-
-            }
-            $oneCount = $twoCount = $threeCount = $twoFiveCount = 0; //set counters to 0 to reset for next iteration
         }
+        //var_dump($sortedData);
         //For viewing the data
         //---------------------------
         /*foreach($sortedData as $key => $data){
@@ -420,152 +424,154 @@ if(isset($_FILES)) { //Check to see if a file is uploaded
         $balance = array();
 
         //Iterate through sections and add up debit and credit columns
-        foreach($sortedData as $key => $value) {
-            $debits = array();
-            $credits = array();
-            $sumDebit = 0.00;
-            $sumCredit = 0.00;
-            $loopCount = 0;
-            //echo "Balance: $key => <br>";
-            //for section 100
-            if (array_key_exists(10, $value)) { //if the array key contains 100
-                foreach ($value as $k => $data) {
-                    if($k === 10) {
-                        foreach ($data as $a) { //iterate through sections putting debits/credits into separate arrays
-                            $debits[] = $a['debit'];
-                            $credits[] = $a['credit'];
-                            $loopCount++; //count iterations
-                        }
-                    }
-                }
-                $sumDebit = array_sum($debits); //sum the debits array
-                $sumCredit = array_sum($credits); //sum the credits array
-                //Below is used for viewing the data
-                //---------------------------------------------------------------------
-                /*echo "10 Debits: <br>";
-                echo "Debits count: $loopCount <br>";
-                var_dump($debits);
-                echo "<br>Total: ";
-                var_dump($sumDebit);
-                echo "<br><br>";
-                echo "10 Credits: <br>";
-                echo "Credits count: $loopCount <br>";
-                var_dump($credits);
-                echo "<br>Total: ";
-                var_dump($sumCredit);
-                echo "<br><br>";*/
-                //--------------------------------------------------------------------
-                $balance[$key][10]['debitSum'] = $sumDebit; // set summed values into new array $balance with name and code as keys
-                $balance[$key][10]['creditSum'] = $sumCredit; //set summed values into new array with name and code as keys
-                $loopCount = 0;
+        foreach($sortedData as $b => $arr) {
+            foreach ($arr as $key => $value) {
                 $debits = array();
                 $credits = array();
-            }
-            //for section 200
-            if (array_key_exists(20, $value)) {
-                foreach ($value as $k => $data) {
-                    if($k === 20) {
-                        foreach ($data as $b) { //iterate through sections putting debits/credits into separate arrays
-                            $debits[] = $b['debit'];
-                            $credits[] = $b['credit'];
-                            $loopCount++; //count iterations
+                $sumDebit = 0.00;
+                $sumCredit = 0.00;
+                $loopCount = 0;
+                //echo "Balance: $key => <br>";
+                //for section 100
+                if (array_key_exists(10, $value)) { //if the array key contains 100
+                    foreach ($value as $k => $data) {
+                        if ($k === 10) {
+                            foreach ($data as $c) { //iterate through sections putting debits/credits into separate arrays
+                                $debits[] = $c['debit'];
+                                $credits[] = $c['credit'];
+                                $loopCount++; //count iterations
+                            }
                         }
                     }
+                    $sumDebit = array_sum($debits); //sum the debits array
+                    $sumCredit = array_sum($credits); //sum the credits array
+                    //Below is used for viewing the data
+                    //---------------------------------------------------------------------
+                    /*echo "10 Debits: <br>";
+                    echo "Debits count: $loopCount <br>";
+                    var_dump($debits);
+                    echo "<br>Total: ";
+                    var_dump($sumDebit);
+                    echo "<br><br>";
+                    echo "10 Credits: <br>";
+                    echo "Credits count: $loopCount <br>";
+                    var_dump($credits);
+                    echo "<br>Total: ";
+                    var_dump($sumCredit);
+                    echo "<br><br>";*/
+                    //--------------------------------------------------------------------
+                    $balance[$b][$key][10]['debitSum'] = $sumDebit; // set summed values into new array $balance with name and code as keys
+                    $balance[$b][$key][10]['creditSum'] = $sumCredit; //set summed values into new array with name and code as keys
+                    $loopCount = 0;
+                    $debits = array();
+                    $credits = array();
                 }
-                $sumDebit = array_sum($debits); //sum the array
-                $sumCredit = array_sum($credits); //sum the array
-                //Below is used for viewing the data
-                //-------------------------------------------------------------------
-                /*echo "20 Debits: <br>";
-                echo "Debits count: $loopCount <br>";
-                var_dump($debits);
-                echo "<br>Total: ";
-                var_dump($sumDebit);
-                echo "<br><br>";
-                echo "20 Credits: <br>";
-                echo "Credits count: $loopCount <br>";
-                var_dump($credits);
-                echo "<br>Total: ";
-                var_dump($sumCredit);
-                echo "<br><br>";*/
-                //--------------------------------------------------------------------
-                $balance[$key][20]['debitSum'] = $sumDebit; // set summed values into new array with name and code as key
-                $balance[$key][20]['creditSum'] = $sumCredit;
-                $loopCount = 0;
-                $debits = array();
-                $credits = array();
-            }
-           //echo "<hr>";
-            if (array_key_exists(25, $value)) {
-                foreach ($value as $k => $data) {
-                    if($k === 25) {
-                        foreach ($data as $c) { //iterate through sections putting debits/credits into separate arrays
-                            $debits[] = $c['debit'];
-                            $credits[] = $c['credit'];
-                            $loopCount++; //count iterations
+                //for section 200
+                if (array_key_exists(20, $value)) {
+                    foreach ($value as $k => $data) {
+                        if ($k === 20) {
+                            foreach ($data as $d) { //iterate through sections putting debits/credits into separate arrays
+                                $debits[] = $d['debit'];
+                                $credits[] = $d['credit'];
+                                $loopCount++; //count iterations
+                            }
                         }
                     }
+                    $sumDebit = array_sum($debits); //sum the array
+                    $sumCredit = array_sum($credits); //sum the array
+                    //Below is used for viewing the data
+                    //-------------------------------------------------------------------
+                    /*echo "20 Debits: <br>";
+                    echo "Debits count: $loopCount <br>";
+                    var_dump($debits);
+                    echo "<br>Total: ";
+                    var_dump($sumDebit);
+                    echo "<br><br>";
+                    echo "20 Credits: <br>";
+                    echo "Credits count: $loopCount <br>";
+                    var_dump($credits);
+                    echo "<br>Total: ";
+                    var_dump($sumCredit);
+                    echo "<br><br>";*/
+                    //--------------------------------------------------------------------
+                    $balance[$b][$key][20]['debitSum'] = $sumDebit; // set summed values into new array with name and code as key
+                    $balance[$b][$key][20]['creditSum'] = $sumCredit;
+                    $loopCount = 0;
+                    $debits = array();
+                    $credits = array();
                 }
-                $sumDebit = array_sum($debits); //sum the array
-                $sumCredit = array_sum($credits); //sum the array
-                //Below is used for viewing the data
-                //-------------------------------------------------------------------
-                /*echo "25 Debits: <br>";
-                echo "Debits count: $loopCount <br>";
-                var_dump($debits);
-                echo "<br>Total: ";
-                var_dump($sumDebit);
-                echo "<br><br>";
-                echo "25 Credits: <br>";
-                echo "Credits count: $loopCount <br>";
-                var_dump($credits);
-                echo "<br>Total: ";
-                var_dump($sumCredit);
-                echo "<br><br>";*/
-                //--------------------------------------------------------------------
-                $balance[$key][25]['debitSum'] = $sumDebit; // set summed values into new array with name and code as key
-                $balance[$key][25]['creditSum'] = $sumCredit;
-                $loopCount = 0;
-                $debits = array();
-                $credits = array();
-            }
-            if (array_key_exists(50, $value)) {
-                foreach ($value as $k => $data) {
-                    if($k === 50) {
-                        foreach ($data as $d) {//iterate through sections putting debits/credits into separate arrays
-
-                            $debits[] = $d['debit'];
-                            $credits[] = $d['credit'];
-                            $loopCount++;
+                //echo "<hr>";
+                if (array_key_exists(25, $value)) {
+                    foreach ($value as $k => $data) {
+                        if ($k === 25) {
+                            foreach ($data as $e) { //iterate through sections putting debits/credits into separate arrays
+                                $debits[] = $e['debit'];
+                                $credits[] = $e['credit'];
+                                $loopCount++; //count iterations
+                            }
                         }
                     }
-
-
+                    $sumDebit = array_sum($debits); //sum the array
+                    $sumCredit = array_sum($credits); //sum the array
+                    //Below is used for viewing the data
+                    //-------------------------------------------------------------------
+                    /*echo "25 Debits: <br>";
+                    echo "Debits count: $loopCount <br>";
+                    var_dump($debits);
+                    echo "<br>Total: ";
+                    var_dump($sumDebit);
+                    echo "<br><br>";
+                    echo "25 Credits: <br>";
+                    echo "Credits count: $loopCount <br>";
+                    var_dump($credits);
+                    echo "<br>Total: ";
+                    var_dump($sumCredit);
+                    echo "<br><br>";*/
+                    //--------------------------------------------------------------------
+                    $balance[$b][$key][25]['debitSum'] = $sumDebit; // set summed values into new array with name and code as key
+                    $balance[$b][$key][25]['creditSum'] = $sumCredit;
+                    $loopCount = 0;
+                    $debits = array();
+                    $credits = array();
                 }
-                $sumDebit = array_sum($debits); //sum the array
-                $sumCredit = array_sum($credits); //sum the array
-                //Below is used to view the data
-                //--------------------------------------------------------------------
-                /*echo "50 Debits: <br>";
-                var_dump($debits);
-                echo "Debits count: $loopCount <br>";
-                echo "<br>Total: ";
-                var_dump($sumDebit);
-                echo "<br><br>";
-                echo "50 Credits: <br>";
-                echo "Credits count: $loopCount <br>";
-                var_dump($credits);
-                echo "<br>Total: ";
-                var_dump($sumCredit);
-                echo "<br><br>";*/
-                //--------------------------------------------------------------------
-                $balance[$key][50]['debitSum'] = $sumDebit; // set summed values into new array with name and code as key
-                $balance[$key][50]['creditSum'] = $sumCredit;
-                $loopCount = 0;
-                $debits = array();
-                $credits = array();
-            }
+                if (array_key_exists(50, $value)) {
+                    foreach ($value as $k => $data) {
+                        if ($k === 50) {
+                            foreach ($data as $f) {//iterate through sections putting debits/credits into separate arrays
 
+                                $debits[] = $f['debit'];
+                                $credits[] = $f['credit'];
+                                $loopCount++;
+                            }
+                        }
+
+
+                    }
+                    $sumDebit = array_sum($debits); //sum the array
+                    $sumCredit = array_sum($credits); //sum the array
+                    //Below is used to view the data
+                    //--------------------------------------------------------------------
+                    /*echo "50 Debits: <br>";
+                    var_dump($debits);
+                    echo "Debits count: $loopCount <br>";
+                    echo "<br>Total: ";
+                    var_dump($sumDebit);
+                    echo "<br><br>";
+                    echo "50 Credits: <br>";
+                    echo "Credits count: $loopCount <br>";
+                    var_dump($credits);
+                    echo "<br>Total: ";
+                    var_dump($sumCredit);
+                    echo "<br><br>";*/
+                    //--------------------------------------------------------------------
+                    $balance[$b][$key][50]['debitSum'] = $sumDebit; // set summed values into new array with name and code as key
+                    $balance[$b][$key][50]['creditSum'] = $sumCredit;
+                    $loopCount = 0;
+                    $debits = array();
+                    $credits = array();
+                }
+
+            }
         }
         //Used to view the data
         //------------------------------------------
@@ -577,37 +583,38 @@ if(isset($_FILES)) { //Check to see if a file is uploaded
         $output = array();
         $toBalance = array();
         //Prepare the data for export to index.php
-        foreach($balance as $key => $value) {
+        foreach($balance as $ee => $arr) {
+            foreach ($arr as $key => $value) {
 
-            foreach ($value as $k => $v) {
-                $dbt = $cdt = "";
-                $dt = round($v['debitSum'], 2);
-                //var_dump($dt);
-                $ct = round($v['creditSum'], 2);
-                //var_dump($ct);
-                //echo "<br>Debit type: " . gettype($dt) . " | " . "Credit type: " . gettype($ct) . "<br>";
-                //Determine if debit and credit are equal if so output line with data and html img tag
-                if ($dt === $ct) {
-                    $code = "| $k | Debit Total = $$dt | Credit Total = $$ct | <img src='images/checkmark-30x30.png' alt ='' height ='30' width='30'/> <br>";
-                    $output[$key][$k]['balance'] = $code;
-                } else { //if not subtract them and output the difference
-                    if($dt > $ct){
-                        $difference = round($dt - $ct, 2);
-                        $dbt = "<span class='highlight'>Debit Total = $$dt</span>";
-                        $cdt = "Credit Total = $$ct";
+                foreach ($value as $k => $v) {
+                    $dbt = $cdt = "";
+                    $dt = round($v['debitSum'], 2);
+                    //var_dump($dt);
+                    $ct = round($v['creditSum'], 2);
+                    //var_dump($ct);
+                    //echo "<br>Debit type: " . gettype($dt) . " | " . "Credit type: " . gettype($ct) . "<br>";
+                    //Determine if debit and credit are equal if so output line with data and html img tag
+                    if ($dt === $ct) {
+                        $code = "| $k | Debit Total = $$dt | Credit Total = $$ct | <img src='images/checkmark-30x30.png' alt ='' height ='30' width='30'/> <br>";
+                        $output[$ee][$k][$key]['balance'] = $code;
+                    } else { //if not subtract them and output the difference
+                        if ($dt > $ct) {
+                            $difference = round($dt - $ct, 2);
+                            $dbt = "<span class='highlight'>Debit Total = $$dt</span>";
+                            $cdt = "Credit Total = $$ct";
+                        } else {
+                            $difference = round($ct - $dt, 2);
+                            $dbt = "Debit Total = $$dt";
+                            $cdt = "<span class='highlight'>Credit Total = $$ct</span>";
+                        }
+                        $code = "| $k | $dbt | $cdt | <span class='red'>$" . number_format($difference, 2) . "</span> <br>";
+                        $output[$ee][$k][$key]['notBalance'] = $code;
+                        $toBalance[$ee][$k][$key] = array($dt, $ct);
                     }
-                    else{
-                        $difference = round($ct - $dt,2);
-                        $dbt = "Debit Total = $$dt";
-                        $cdt = "<span class='highlight'>Credit Total = $$ct</span>";
-                    }
-                    $code = "| $k | $dbt | $cdt | <span class='red'>$".number_format($difference,2)."</span> <br>";
-                    $output[$key][$k]['notBalance'] = $code;
-                    $toBalance[$key][$k]= array($dt, $ct);
                 }
             }
         }
-
+        //var_dump($toBalance);
         //set the array with the data and date into session variables
         $_SESSION['totalSum'] = $totalSumArray;
         $_SESSION['data'] = $output;
